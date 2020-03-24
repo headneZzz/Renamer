@@ -1,0 +1,66 @@
+plugins {
+    id 'java'
+}
+
+group 'ru.gosarhro'
+version '1.0-SNAPSHOT'
+ext.moduleName = 'Project.main'
+sourceCompatibility = 1.11
+
+repositories {
+    mavenCentral()
+}
+
+def currentOS = org.gradle.internal.os.OperatingSystem.current()
+def platform
+if (currentOS.isWindows()) {
+    platform = 'win'
+} else if (currentOS.isLinux()) {
+    platform = 'linux'
+} else if (currentOS.isMacOsX()) {
+    platform = 'mac'
+}
+
+compileJava.options.encoding = 'UTF-8'
+compileTestJava.options.encoding = 'UTF-8'
+
+dependencies {
+    compile "org.postgresql:postgresql:42.2.2"
+    compile "org.openjfx:javafx-base:11:${platform}"
+    compile "org.openjfx:javafx-controls:11:${platform}"
+    compile "org.openjfx:javafx-fxml:11:${platform}"
+    compile "org.openjfx:javafx-graphics:11:${platform}"
+}
+
+task run(type: JavaExec) {
+    doFirst {
+        jvmArgs = [
+                '--module-path', classpath.asPath,
+                '--add-modules', 'javafx.base,javafx.controls,javafx.fxml,javafx.graphics'
+        ]
+    }
+    classpath sourceSets.main.runtimeClasspath
+    main = "ru.gosarcho.Main"
+}
+jar {
+    inputs.property("moduleName", moduleName)
+    manifest {
+        attributes('Automatic-Module-Name': moduleName)
+    }
+}
+compileJava {
+    inputs.property("moduleName", moduleName)
+    doFirst {
+        options.compilerArgs = [
+                '--module-path', classpath.asPath,
+                '--add-modules', 'javafx.base,javafx.controls,javafx.fxml,javafx.graphics'
+        ]
+        classpath = files()
+    }
+}
+
+task createJar(type: Copy) {
+    dependsOn 'jar'
+    into "$buildDir/libs"
+    from configurations.runtime
+}
