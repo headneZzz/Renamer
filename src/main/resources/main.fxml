@@ -4,58 +4,42 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.control.ProgressBar?>
 <?import javafx.scene.control.RadioButton?>
+<?import ru.gosarcho.TextFieldWithAutocomplete?>
 <GridPane fx:controller="ru.gosarcho.Controller"
           xmlns:fx="http://javafx.com/fxml"
           alignment="center"
           hgap="10"
           vgap="10">
     <Label GridPane.columnIndex="0"
-           GridPane.rowIndex="0"
-           GridPane.rowSpan="1"
-           GridPane.columnSpan="2">Директория
-    </Label>
-    <TextField GridPane.columnIndex="1"
-               GridPane.rowIndex="0"
-               GridPane.rowSpan="1"
-               GridPane.columnSpan="2"
-               fx:id="path">I:\Оцифровка\Фонды
-    </TextField>
-
-    <Label GridPane.columnIndex="0"
-           GridPane.rowIndex="1"
-           GridPane.rowSpan="1"
-           GridPane.columnSpan="2">Фонд
-    </Label>
-    <TextField GridPane.columnIndex="1"
-               GridPane.rowIndex="1"
-               GridPane.rowSpan="1"
-               GridPane.columnSpan="2"
-               fx:id="fond">
-    </TextField>
-
-    <Label GridPane.columnIndex="0"
            GridPane.rowIndex="2"
            GridPane.rowSpan="1"
-           GridPane.columnSpan="2">Опись
+           GridPane.columnSpan="2">Директория
     </Label>
     <TextField GridPane.columnIndex="1"
                GridPane.rowIndex="2"
                GridPane.rowSpan="1"
                GridPane.columnSpan="2"
-               fx:id="op">
+               fx:id="path">I:\Оцифровка\Фонды
     </TextField>
+    <Button GridPane.columnIndex="3"
+            GridPane.rowIndex="2"
+            GridPane.rowSpan="1"
+            GridPane.columnSpan="1"
+            onAction="#PathButtonClicked">...
+    </Button>
 
     <Label GridPane.columnIndex="0"
            GridPane.rowIndex="3"
            GridPane.rowSpan="1"
-           GridPane.columnSpan="2">Дело
+           GridPane.columnSpan="2">ФОД
     </Label>
-    <TextField GridPane.columnIndex="1"
-               GridPane.rowIndex="3"
-               GridPane.rowSpan="1"
-               GridPane.columnSpan="2"
-               fx:id="document">
-    </TextField>
+    <TextFieldWithAutocomplete GridPane.columnIndex="1"
+                               GridPane.rowIndex="3"
+                               GridPane.rowSpan="1"
+                               GridPane.columnSpan="2"
+                               promptText="Фонд Опись Дело"
+                               fx:id="document">
+    </TextFieldWithAutocomplete>
 
     <Label GridPane.columnIndex="0"
            GridPane.rowIndex="4"
@@ -96,12 +80,7 @@
                fx:id="startSheet">
     </TextField>
 
-    <Button GridPane.columnIndex="3"
-            GridPane.rowIndex="0"
-            GridPane.rowSpan="1"
-            GridPane.columnSpan="1"
-            onAction="#PathButtonClicked">...
-    </Button>
+
     <Button GridPane.columnIndex="0"
             GridPane.rowIndex="7"
             GridPane.rowSpan="1"
