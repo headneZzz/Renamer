@@ -1,6 +1,5 @@
 package ru.gosarcho;
 
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -13,15 +12,23 @@ import java.util.ResourceBundle;
 
 public class Controller implements Initializable {
     @FXML
+    private ComboBox<String> comboBoxExecutors;
+    @FXML
     private TextField countFiles;
     @FXML
     private TextField startSheet;
+    @FXML
+    private TextField turnover;
     @FXML
     private TextField firstLetters;
     @FXML
     private TextField path;
     @FXML
     private TextFieldWithAutocomplete document;
+    @FXML
+    private RadioButton oneListsPlus;
+    @FXML
+    private RadioButton twoListsPlus;
     @FXML
     private RadioButton forward;
     @FXML
@@ -37,14 +44,24 @@ public class Controller implements Initializable {
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
-        ToggleGroup toggleGroup = new ToggleGroup();
-        forward.setToggleGroup(toggleGroup);
-        back.setToggleGroup(toggleGroup);
+        ToggleGroup forwardBackToggleGroup = new ToggleGroup();
+        forward.setToggleGroup(forwardBackToggleGroup);
+        back.setToggleGroup(forwardBackToggleGroup);
+
+        ToggleGroup listsPlusToggleGroup = new ToggleGroup();
+        oneListsPlus.setToggleGroup(listsPlusToggleGroup);
+        twoListsPlus.setToggleGroup(listsPlusToggleGroup);
+        oneListsPlus.setSelected(true);
+
         try (Connection connection = DriverManager.getConnection(url, "admin", "adminus")) {
             Statement statement = connection.createStatement();
             ResultSet resultSet = statement.executeQuery("SELECT * FROM digitization.Сводный_журнал");
             while (resultSet.next()) {
                 document.getEntries().add(resultSet.getString("ФОД").replaceAll("_", " "));
+            }
+            resultSet = statement.executeQuery("SELECT * FROM digitization.Исполнители");
+            while (resultSet.next()) {
+                comboBoxExecutors.getItems().addAll(resultSet.getString("Исполнитель") + " :" + resultSet.getInt("Код_исполнителя"));
             }
         } catch (SQLException e) {
             errorLabel.setText("Ошибка подлючения к базе данных");
@@ -53,13 +70,28 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void RenameButtonClicked(ActionEvent event) {
+    private void RenameButtonClicked() {
+        if (path.getText().isEmpty()) {
+            errorLabel.setText("Введите директорию");
+        }
+        else if (firstLetters.getText().isEmpty()) {
+            errorLabel.setText("Введите первые буквы файлов");
+        }
+        else if (!forward.isSelected() && !back.isSelected()) {
+            errorLabel.setText("Задайте порядок нумерации= вперед-назад");
+        }
+
+        else {
+            errorLabel.setText("");
+            int listsPlus = oneListsPlus.isSelected() ? 1 : 2;
+            int countF = Integer.parseInt(countFiles.getText());
+        }
     }
 
     private final DirectoryChooser directoryChooser = new DirectoryChooser();
 
     @FXML
-    private void PathButtonClicked(ActionEvent event) {
+    private void PathButtonClicked() {
         try {
             File dir = directoryChooser.showDialog(Main.getPrimaryStage());
             path.setText(dir.getAbsolutePath());
