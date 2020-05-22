@@ -31,7 +31,7 @@
                GridPane.rowIndex="2"
                GridPane.rowSpan="1"
                GridPane.columnSpan="2"
-               fx:id="path">I:\Оцифровка\Фонды
+               fx:id="pathToFiles">I:\Оцифровка\Фонды
     </TextField>
     <Button GridPane.columnIndex="3"
             GridPane.rowIndex="2"
@@ -50,7 +50,7 @@
                                GridPane.rowSpan="1"
                                GridPane.columnSpan="2"
                                promptText="Фонд Опись Дело"
-                               fx:id="document">
+                               fx:id="documentName">
     </TextFieldWithAutocomplete>
 
     <Label GridPane.columnIndex="0"
@@ -64,21 +64,8 @@
                GridPane.rowIndex="4"
                GridPane.rowSpan="1"
                GridPane.columnSpan="2"
-               fx:id="firstLetters">
+               fx:id="firstLettersOfOldFiles">
     </TextField>
-
-    <Label GridPane.columnIndex="0"
-           GridPane.rowIndex="5"
-           GridPane.rowSpan="1"
-           GridPane.columnSpan="2">Числов файлов
-    </Label>
-    <TextField GridPane.columnIndex="1"
-               GridPane.rowIndex="5"
-               GridPane.rowSpan="1"
-               GridPane.columnSpan="2"
-               fx:id="countFiles">
-    </TextField>
-
 
     <Label GridPane.columnIndex="0"
            GridPane.rowIndex="6"
@@ -113,7 +100,7 @@
                  GridPane.rowIndex="8"
                  GridPane.rowSpan="1"
                  GridPane.columnSpan="1"
-                 fx:id="oneListsPlus">1
+                 fx:id="oneListPlus">1
     </RadioButton>
     <RadioButton GridPane.columnIndex="2"
                  GridPane.rowIndex="8"
@@ -126,7 +113,7 @@
             GridPane.rowIndex="10"
             GridPane.rowSpan="1"
             GridPane.columnSpan="1"
-            fx:id="rename"
+            fx:id="renameBtn"
             onAction="#RenameButtonClicked">Переименовать
     </Button>
     <RadioButton GridPane.columnIndex="1"
