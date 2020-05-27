@@ -1,5 +1,6 @@
 package ru.gosarcho;
 
+import javafx.concurrent.WorkerStateEvent;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.*;
@@ -9,14 +10,11 @@ import javafx.stage.DirectoryChooser;
 import java.io.File;
 import java.io.IOException;
 import java.net.URL;
-import java.nio.file.Files;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.ResourceBundle;
-
-import static java.nio.file.StandardCopyOption.REPLACE_EXISTING;
 
 public class Controller implements Initializable {
     @FXML
@@ -47,7 +45,7 @@ public class Controller implements Initializable {
     private Label errorLabel;
 
     private String url = "jdbc:postgresql://server:5433/archive";
-    private static List<File> filesNames = new ArrayList<>();
+    private static List<File> oldFiles = new ArrayList<>();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -77,11 +75,11 @@ public class Controller implements Initializable {
     }
 
     private void listFilesInFolderWithFilter(String directoryName, String startOfFileNames) {
-        filesNames.clear();
+        oldFiles.clear();
         File directory = new File(directoryName);
         for (File file : Objects.requireNonNull(directory.listFiles())) {
             if (file.isFile() && file.getName().startsWith(startOfFileNames) && (file.getName().endsWith(".jpg") || file.getName().endsWith(".JPG"))) {
-                filesNames.add(file);
+                oldFiles.add(file);
             }
         }
     }
@@ -98,48 +96,34 @@ public class Controller implements Initializable {
             errorLabel.setText("");
             int listsPlus = oneListPlus.isSelected() ? 1 : 2;
             listsPlus = forward.isSelected() ? listsPlus : -listsPlus;
-            int sheetNumber = Integer.parseInt(startSheet.getText());
-            String FOD = documentName.getText().replaceAll(" ", "_");
+            String fod = documentName.getText().replaceAll(" ", "_");
 
             listFilesInFolderWithFilter(pathToFiles.getText(), firstLettersOfOldFiles.getText());
 
-            for (File file : filesNames) {
-                String page;
-                if (sheetNumber < 10) {
-                    page = "00" + sheetNumber;
-                } else if (sheetNumber < 100) {
-                    page = "0" + sheetNumber;
-                } else {
-                    page = String.valueOf(sheetNumber);
-                }
-
-                if (!turnover.getText().isEmpty()) {
-                    if (turnover.getText().matches("/d")) {
-                        page += "-" + turnover.getText();
-                    } else {
-                        page += turnover.getText();
-                    }
-                }
-
-                sheetNumber += listsPlus;
-
+            CopyTask copyTask = new CopyTask(
+                    pathToFiles.getText(),
+                    oldFiles,
+                    Integer.parseInt(startSheet.getText()),
+                    listsPlus,
+                    fod,
+                    turnover.getText()
+            );
+            progressBar.progressProperty().unbind();
+            progressBar.progressProperty().bind(copyTask.progressProperty());
+            copyTask.addEventHandler(WorkerStateEvent.WORKER_STATE_SUCCEEDED, workerStateEvent -> {
+                //Windows only
                 try {
-                    File newName = new File(pathToFiles.getText() + "\\" + FOD + "_" + page + ".jpg");
-                    Files.copy(file.toPath(), newName.toPath(), REPLACE_EXISTING);
-                    Alert alert = new Alert(AlertType.INFORMATION);
-                    alert.setTitle("Файл переименован");
-                    alert.setHeaderText(null);
-                    alert.setContentText(file.getName() + " => " + newName.getName() + "\n" + newName.getParent());
-                    alert.showAndWait();
-                } catch (IOException e) {
-                    Alert alert = new Alert(AlertType.ERROR);
-                    alert.setTitle("Ошибка");
-                    alert.setHeaderText(null);
-                    alert.setContentText(e.getMessage());
-                    alert.showAndWait();
+                    Runtime.getRuntime().exec("explorer.exe /select, " + copyTask.getValue().get(0));
+                } catch (IOException | IndexOutOfBoundsException e) {
+                    e.printStackTrace();
                 }
-
-            }
+                Alert alert = new Alert(AlertType.INFORMATION);
+                alert.setTitle("Файлы переименованы");
+                alert.setHeaderText(null);
+                alert.setContentText(copyTask.getValue().size() + " из " + oldFiles.size());
+                alert.showAndWait();
+            });
+            new Thread(copyTask).start();
         }
     }
 
