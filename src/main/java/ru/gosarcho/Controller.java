@@ -11,10 +11,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.ResourceBundle;
+import java.util.*;
 
 public class Controller implements Initializable {
     @FXML
@@ -44,8 +41,9 @@ public class Controller implements Initializable {
     @FXML
     private Label errorLabel;
 
-    private String url = "jdbc:postgresql://server:5433/archive";
     private static List<File> oldFiles = new ArrayList<>();
+
+    private Service service = new Service();
 
     @Override
     public void initialize(URL location, ResourceBundle resources) {
@@ -58,11 +56,15 @@ public class Controller implements Initializable {
         twoListsPlus.setToggleGroup(listsPlusToggleGroup);
         oneListPlus.setSelected(true);
 
-        try (Connection connection = DriverManager.getConnection(url, "admin", "adminus")) {
-            Statement statement = connection.createStatement();
+        String url = service.getPropertyValue(PropertyName.DB_URL);
+        String user = service.getPropertyValue(PropertyName.DB_USER);
+        String pass = service.getPropertyValue(PropertyName.DB_PASSWORD);
+        try (Connection connection = DriverManager.getConnection(url, user, pass);
+             Statement statement = connection.createStatement()
+        ) {
             ResultSet resultSet = statement.executeQuery("SELECT * FROM digitization.Сводный_журнал");
             while (resultSet.next()) {
-                documentName.getEntries().add(resultSet.getString("ФОД").replaceAll("_", " "));
+                documentName.getEntries().add(resultSet.getString("ФОД").replace("_", " "));
             }
             resultSet = statement.executeQuery("SELECT * FROM digitization.Исполнители");
             while (resultSet.next()) {
@@ -85,7 +87,7 @@ public class Controller implements Initializable {
     }
 
     @FXML
-    private void RenameButtonClicked() {
+    private void renameButtonClicked() {
         if (pathToFiles.getText().isEmpty()) {
             errorLabel.setText("Введите директорию");
         } else if (firstLettersOfOldFiles.getText().isEmpty()) {
@@ -96,7 +98,7 @@ public class Controller implements Initializable {
             errorLabel.setText("");
             int listsPlus = oneListPlus.isSelected() ? 1 : 2;
             listsPlus = forward.isSelected() ? listsPlus : -listsPlus;
-            String fod = documentName.getText().replaceAll(" ", "_");
+            String fod = documentName.getText().replace(" ", "_");
 
             listFilesInFolderWithFilter(pathToFiles.getText(), firstLettersOfOldFiles.getText());
 
@@ -130,11 +132,12 @@ public class Controller implements Initializable {
     private final DirectoryChooser directoryChooser = new DirectoryChooser();
 
     @FXML
-    private void PathButtonClicked() {
+    private void pathButtonClicked() {
         try {
             File dir = directoryChooser.showDialog(Main.getPrimaryStage());
             pathToFiles.setText(dir.getAbsolutePath());
         } catch (NullPointerException ignored) {
+            //
         }
     }
 }

@@ -1,66 +1,43 @@
 plugins {
     id 'java'
+    id 'org.openjfx.javafxplugin' version '0.0.9'
+    id 'org.beryx.jlink' version '2.12.0'
 }
 
 group 'ru.gosarhro'
 version '1.0-SNAPSHOT'
 ext.moduleName = 'Project.main'
 sourceCompatibility = 1.11
+mainClassName = "$moduleName/ru.gosarcho.Main"
 
 repositories {
     mavenCentral()
 }
 
-def currentOS = org.gradle.internal.os.OperatingSystem.current()
-def platform
-if (currentOS.isWindows()) {
-    platform = 'win'
-} else if (currentOS.isLinux()) {
-    platform = 'linux'
-} else if (currentOS.isMacOsX()) {
-    platform = 'mac'
-}
-
 compileJava.options.encoding = 'UTF-8'
 compileTestJava.options.encoding = 'UTF-8'
 
+javafx {
+    version = "11"
+    modules = [ 'javafx.controls', 'javafx.fxml' ]
+}
+
 dependencies {
-    compile "org.postgresql:postgresql:42.2.2"
-    compile "org.openjfx:javafx-base:11:${platform}"
-    compile "org.openjfx:javafx-controls:11:${platform}"
-    compile "org.openjfx:javafx-fxml:11:${platform}"
-    compile "org.openjfx:javafx-graphics:11:${platform}"
+    implementation 'org.postgresql:postgresql:42.5.0'
 }
 
-task run(type: JavaExec) {
-    doFirst {
-        jvmArgs = [
-                '--module-path', classpath.asPath,
-                '--add-modules', 'javafx.base,javafx.controls,javafx.fxml,javafx.graphics'
-        ]
-    }
-    classpath sourceSets.main.runtimeClasspath
-    main = "ru.gosarcho.Main"
-}
 jar {
-    inputs.property("moduleName", moduleName)
     manifest {
-        attributes('Automatic-Module-Name': moduleName)
+        attributes 'Main-Class': 'ru.gosarcho.Launcher'
     }
-}
-compileJava {
-    inputs.property("moduleName", moduleName)
-    doFirst {
-        options.compilerArgs = [
-                '--module-path', classpath.asPath,
-                '--add-modules', 'javafx.base,javafx.controls,javafx.fxml,javafx.graphics'
-        ]
-        classpath = files()
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     }
 }
 
-task createJar(type: Copy) {
-    dependsOn 'jar'
-    into "$buildDir/libs"
-    from configurations.runtime
+jlink {
+    options = ['--strip-debug', '--compress', '2', '--no-header-files', '--no-man-pages']
+    launcher {
+        name = 'renamer'
+    }
 }
